@@ -1,12 +1,13 @@
-import './index.css'
+import React from "react";
+import "./index.css";
+import Home from "./../src/pages/Home/Home"; // ✅ Import Home page
 
-function App() {
-
+const App: React.FC = () => {
   return (
-    <h1 className="text-3xl font-bold underline text-green-400">
-      Hello world!
-    </h1>
-  )
+    <div>
+      <Home /> {/* ✅ Render Home Page */}
+    </div>
+  );
 }
 
-export default App
+export default App;
