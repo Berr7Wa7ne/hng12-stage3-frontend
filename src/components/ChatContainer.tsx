@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { detectLanguage, summarizeText, translateText } from "../api/api";
 import TextAreaInput from "./TextAreaInput";
 import OutputDisplay from "./OutputDisplay";
 
@@ -10,21 +11,76 @@ interface Message {
 const ChatContainer = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [detectedLanguage, setDetectedLanguage] = useState("en");
-  const [input, setInput] = useState(""); // ✅ Added input state
+  const [summary, setSummary] = useState<string | null>(null);
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [selectedLang, setSelectedLang] = useState("es");
+  const [input, setInput] = useState("");
 
-  const handleSummarize = () => {
-    console.log("Summarizing...");
+  // 🔹 Handle Language Detection
+  const handleDetectLanguage = async (text: string) => {
+    if (!text.trim()) return;
+    try {
+      const lang = await detectLanguage(text);
+      setDetectedLanguage(lang);
+    } catch (error) {
+        if (error instanceof Error) {
+          console.error(error.message); // ✅ Now TypeScript knows error has .message
+        } else {
+          console.error("An unknown error occurred", error);
+        }
+      }
   };
 
-  const handleTranslate = (language: string) => {
-    console.log(`Translating to ${language}...`);
+  // 🔹 Handle Summarization
+  const handleSummarize = async () => {
+    if (input.length < 150 || detectedLanguage !== "en") return;
+    try {
+      const summaryResult = await summarizeText(input);
+      setSummary(summaryResult);
+    } catch (error) {
+        if (error instanceof Error) {
+          console.error(error.message); // ✅ Now TypeScript knows error has .message
+        } else {
+          console.error("An unknown error occurred", error);
+        }
+      }
   };
+
+  // 🔹 Handle Translation
+  const handleTranslate = async (text: string) => {
+    console.log("🟢 handleTranslate function triggered!"); // Debugging log
+    console.log("📌 Current input value:", input);
+    if (!text.trim()) {
+      console.log("❌ No input text to translate.");
+      return;
+    }
+    
+    console.log("🔹 Translating:", text, "to", selectedLang);
+  
+    try {
+      const translationResult = await translateText(text, selectedLang);
+      console.log("✅ Translation successful:", translationResult);
+      setTranslation(translationResult);
+      console.log("🟢 Updated translation state:", translationResult);
+    } catch (error) {
+      console.error("❌ Translation failed:", error);
+    }
+  };
+  
+  
+    
+
+  useEffect(() => {
+    if (input.trim()) {
+      handleDetectLanguage(input);
+    }
+  }, [input]); // ✅ Detect language on every input change
 
   const handleSendMessage = () => {
-    if (!input.trim()) return; // ✅ Use input state
-
+    if (!input.trim()) return;
     const newMessage: Message = { text: input, sender: "user" };
     setMessages([...messages, newMessage]);
+    handleDetectLanguage(input);
     setInput(""); // ✅ Clear input after sending
   };
 
@@ -34,11 +90,14 @@ const ChatContainer = () => {
         <OutputDisplay
           messages={messages}
           detectedLanguage={detectedLanguage}
+          summary={summary}
+          translation={translation}
+          selectedLang={selectedLang} // 🔹 Pass selectedLang
+          setSelectedLang={setSelectedLang} 
           onSummarize={handleSummarize}
-          onTranslate={handleTranslate}
+          onTranslate={() => handleTranslate(input)}
         />
       </div>
-      {/* ✅ Pass input and setInput to TextAreaInput */}
       <TextAreaInput input={input} setInput={setInput} onSendMessage={handleSendMessage} />
     </div>
   );
