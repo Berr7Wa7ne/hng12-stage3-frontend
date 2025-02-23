@@ -13,7 +13,7 @@ interface OutputDisplayProps {
   selectedLang: string;
   setSelectedLang: (language: string) => void; 
   onSummarize: () => void;
-  onTranslate: () => void;
+  onTranslate: (text: string) => void;
 }
 
 const OutputDisplay = ({
@@ -26,8 +26,8 @@ const OutputDisplay = ({
   onSummarize,
   onTranslate,
 }: OutputDisplayProps) => {
-  const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-  const shouldShowSummarize = lastMessage && lastMessage.text.length > 150 && detectedLanguage === "en";
+  const lastMessage = messages.length > 0 ? messages[messages.length - 1].text : "";
+  const shouldShowSummarize = lastMessage && lastMessage.length > 150 && detectedLanguage === "en";
 
   console.log("🟡 OutputDisplay received translation:", translation);
 
@@ -76,10 +76,7 @@ const OutputDisplay = ({
         </select>
         <button
   className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-  onClick={() => {
-    console.log("🔹 Translate button clicked!");
-    onTranslate();
-  }}
+  onClick={() => onTranslate(lastMessage)}
 >
   Translate
 </button>

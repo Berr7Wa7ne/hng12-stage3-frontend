@@ -67,6 +67,13 @@ const ChatContainer = () => {
     }
   };
   
+    // ✅ NEW: Run translation whenever messages update
+    useEffect(() => {
+        if (messages.length > 0) {
+          const lastMessage = messages[messages.length - 1].text;
+          handleTranslate(lastMessage);
+        }
+      }, [messages]); // 🔹 Triggers on messages update
   
     
 
@@ -76,13 +83,17 @@ const ChatContainer = () => {
     }
   }, [input]); // ✅ Detect language on every input change
 
+
+  // ✅ Handle Sending Message
   const handleSendMessage = () => {
     if (!input.trim()) return;
+
     const newMessage: Message = { text: input, sender: "user" };
-    setMessages([...messages, newMessage]);
-    handleDetectLanguage(input);
+    setMessages([...messages, newMessage]); // ✅ Add message
+    handleDetectLanguage(input); // ✅ Detect language
     setInput(""); // ✅ Clear input after sending
   };
+  
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 p-4">
@@ -95,7 +106,7 @@ const ChatContainer = () => {
           selectedLang={selectedLang} // 🔹 Pass selectedLang
           setSelectedLang={setSelectedLang} 
           onSummarize={handleSummarize}
-          onTranslate={() => handleTranslate(input)}
+          onTranslate={handleTranslate}
         />
       </div>
       <TextAreaInput input={input} setInput={setInput} onSendMessage={handleSendMessage} />
